@@ -1,23 +1,25 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 
 class Utilisateur(models.Model):
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nom = models.CharField(max_length=45, blank=True, null=True)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modif = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "id:{},\n nom:{},\n ajouté le: {}".format(self.id, self.nom, self.date_creation)
+        return "id:{},\n nom:{},\n ajouté le: {}".format(self.user_id, self.nom, self.date_creation)
 
 class Voiture(models.Model):
+    car_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nom_modele = models.CharField(max_length=45, blank=True, null=True)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modif = models.DateTimeField(auto_now=True)
           
-
     def __str__(self):
-        return "id: {},\n nom de modele: {},\n ajoutée le: {}".format(self.id, self.nom_modele, self.date_creation)
+        return "id: {},\n nom de modele: {},\n ajoutée le: {}".format(self.car_id, self.nom_modele, self.date_creation)
 
 class Parametres_voiture(models.Model):
     #Table qui étend la table voiture
@@ -26,7 +28,7 @@ class Parametres_voiture(models.Model):
     parametre_1 = models.FloatField(default=0)
     parametre_2 = models.FloatField(default=0)
     date_modif = models.DateTimeField(auto_now=True)
-    voiture = models.OneToOneField('Voiture', models.SET_NULL,blank=True, null=True) 
+    voiture = models.OneToOneField('Voiture', models.CASCADE, null=True) 
     def __str__(self):
         return "{!s:>},\n parametre_1: {},\n parametre_2: {},\n derniere modification: {}".format(self.voiture, self.parametre_1,self.parametre_2, self.date_modif)
 
