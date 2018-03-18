@@ -17,17 +17,17 @@ class ULVCreateView(generics.CreateAPIView):
     queryset = Utilisateur_loue_voiture.objects.all()
     serializer_class = ULVSerializer
 
-class VoitureRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+class VoitureRUDView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Voiture.objects.all()
     serializer_class = VoitureSerializer
     lookup_field = 'car_id'
 
-class UtilisateurRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+class UtilisateurRUDView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Utilisateur.objects.all()
     serializer_class = UtilisateurSerializer
     lookup_field = 'user_id'
 
-class ULVRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+class ULVRUDView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Utilisateur_loue_voiture.objects.all()
     serializer_class = ULVSerializer
     multiple_lookup_fields = ('utilisateur','voiture')
@@ -38,7 +38,6 @@ class ULVRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         for field in self.multiple_lookup_fields:
             filter[field] = self.kwargs[field]
 
-
-        obj = get_object_or_404(queryset, utilisateur=filter.get('utilisateur'),voiture=filter.get('voiture'))
+        obj = get_object_or_404(queryset, **filter)
         return obj
 

@@ -158,6 +158,16 @@ class VoitureSerializerTestCase(TestCase):
             self.new_voiture_data,
             format="json"
             ))
+        
+        #setup for delete test
+        self.nb = Voiture.objects.count()
+        self.reponses.append(self.client.delete(
+            reverse(
+                'details_voiture',
+                kwargs = {'car_id': voit_id}
+            ),
+            format = "json"
+        ))
 
     def test_serializer_can_create(self):
         #test si on peut creer une instance du modele
@@ -175,14 +185,20 @@ class VoitureSerializerTestCase(TestCase):
     def test_serializer_can_update(self):
         #test si on eut maj les infos de la voiture
         #print(self.reponse.content)
-        #print(self.reponses[-1].content)
-        self.assertEqual(self.reponses[-1].status_code, status.HTTP_200_OK)
+        #print(self.reponses[self.nb_cars].content)
+        self.assertEqual(self.reponses[self.nb_cars].status_code, status.HTTP_200_OK)
+    
+    def test_serializer_can_destroy(self):
+        #test si une voiture a bien ete surpprimee
+        new_nb = Voiture.objects.count()
+        self.assertTrue(new_nb<self.nb)
 
 class UtilisateurSerializerTestCase(TestCase):
 
     def setUp(self):
         self.client = APIClient()
         #setup for retrive test
+
         self.nb_cars = 2
         self.nb_users = 3
         self.users = []
@@ -227,16 +243,47 @@ class UtilisateurSerializerTestCase(TestCase):
             format="json"
         )
 
+        #setup for update test
+        uid = Utilisateur.objects.get(nom = 'Salim').user_id
+        self.update_data = {'nom' : 'Milas'}
+        self.reponses.append(self.client.put(
+            reverse('details_utilisateur',
+            kwargs = {'user_id':uid}
+            ),
+        self.update_data,
+        format = "json"
+        ))
+
+        #setup for delete test
+        self.nb = Utilisateur.objects.count()
+        self.reponses.append(self.client.delete(
+            reverse('details_utilisateur',
+            kwargs = {'user_id':uid}),
+            format = "json"
+        ))
+
+
     def test_serializer_can_create(self):
         #test si on peut creer une instance du modele
 
         #print(self.reponse.content)
         self.assertEqual(self.reponse.status_code, status.HTTP_201_CREATED)
     
-    def test_serializer_can_retrieve_cars(self):        
+    def test_serializer_can_retrieve_cars(self):
+        #test si on peut recup une instance      
         for i in range(self.nb_users):
             #print(self.reponses[i].content)
-            self.assertEqual(self.reponses[i].status_code, status.HTTP_200_OK)        
+            self.assertEqual(self.reponses[i].status_code, status.HTTP_200_OK)
+
+    def test_serializer_can_update(self):
+        #test si on peut maj une instance
+        #print(self.reponses[self.nb_users].content)
+        self.assertEqual(self.reponses[self.nb_users].status_code, status.HTTP_200_OK)   
+    
+    def test_serializer_can_destroy(self):
+        #test si on peut suppr un tuilisateur
+        new_nb = Utilisateur.objects.count()
+        self.assertTrue(new_nb<self.nb)
 
 
 class ULVSerializerTestCase(TestCase):
@@ -273,15 +320,26 @@ class ULVSerializerTestCase(TestCase):
                 'voiture' : VoitureSerializer(instance=self.cars[1]).data.get('car_id'),
                 'consommation' : 100**random() ,
                 })
-        for i in range(5):
+        for i in range(2*self.nb_users-1):
             self.reponses.append(self.client.post(
                 reverse('creer_ulv'),
                 self.ulv_data[i],
                 format="json"
             ))
         
+        #setup for retrieve test
+        self.reponses.append(self.client.get(
+            reverse('details_ulv',
+            kwargs = {
+                'utilisateur': self.users[1].user_id,
+                'voiture' : self.cars[0].car_id,
+                }),
+            format = "json"
+            )
+        )
+        
         #setup for update test
-        #use patch for update here cuz partial update
+        #use patch if partial update
         self.new_ulv_data = {
             'utilisateur': self.users[0].user_id,
             'voiture' : self.cars[0].car_id,
@@ -297,19 +355,38 @@ class ULVSerializerTestCase(TestCase):
             format="json"
         ))
 
+        #setup for delete test
+        self.nb_ulv = Utilisateur_loue_voiture.objects.count()
+        self.destroy_ulv_data = {
+            'utilisateur': self.users[1].user_id,
+            'voiture' : self.cars[1].car_id,
+        }
+        self.reponses.append(self.client.delete(
+            reverse('details_ulv',
+            kwargs = {**self.destroy_ulv_data,}),
+            format = "json"
+        ))
+
     def test_serializer_can_create(self):
-        for i in range(5):
+        for i in range(self.nb_cars + self.nb_users):
             #test si on peut creer une instance du modele
 
             #print(self.reponses[i].content)
             self.assertEqual(self.reponses[i].status_code, status.HTTP_201_CREATED)
     
+    def test_serializer_can_retrieve_card(self):
+        #test si on peut recuperre une instance
+        #print(Utilisateur.objects.get(nom='user2')) 
+        #print(Voiture.objects.get(nom_modele = 'car1'))
+        #print(self.reponses[self.nb_ulv].content)
+        self.assertEqual(self.reponses[self.nb_ulv].status_code,status.HTTP_200_OK)
+
     def test_serializer_can_update(self):
         #test si on peut maj une carte conso
+        #print(self.reponses[0].content)
+        #print(self.reponses[self.nb_ulv+1].content)
+        self.assertEqual(self.reponses[self.nb_ulv+1].status_code,status.HTTP_200_OK)
 
-        #print(self.reponses[-1].content)
-        self.assertEqual(self.reponses[-1].status_code,status.HTTP_200_OK)
-
-    
-        
-
+    def test_serializer_can_destroy(self):
+        new_nb_ulv = Utilisateur_loue_voiture.objects.count()
+        self.assertTrue(new_nb_ulv<self.nb_ulv)
