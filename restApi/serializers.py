@@ -23,12 +23,12 @@ class ULVSerializer(serializers.ModelSerializer):
 
 
 class UtilisateurSerializer(serializers.ModelSerializer):
-    cars_set = ULVSerializer(many=True,required=False)
+    cars_set = ULVSerializer(many=True,required=False,read_only=True)
     class Meta:
         #class meta lie les champs du serializer avec ceux du model
         model = Utilisateur
         fields = ('user_id','nom' ,'cars_set', 'date_creation', 'date_modif')
-        read_only_fields = ('user_id','date_creation', 'date_modif','cars_set')
+        read_only_fields = ('user_id','date_creation', 'date_modif')
 
 class ParametresVoitureSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,11 +38,11 @@ class ParametresVoitureSerializer(serializers.ModelSerializer):
 
 class VoitureSerializer(serializers.ModelSerializer):
     parametres_voiture = ParametresVoitureSerializer()
-    users_set = ULVSerializer(many=True,required=False)
+    users_set = ULVSerializer(many=True,required=False,read_only=True)
     class Meta:
         model = Voiture
         fields = ('car_id','nom_modele', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
-        read_only_fields = ('car_id','date_creation', 'date_modif','users_set')
+        read_only_fields = ('car_id','date_creation', 'date_modif')
 
     def create(self, validated_data):
         parametres_data = validated_data.pop('parametres_voiture')
