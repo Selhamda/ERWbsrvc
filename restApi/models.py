@@ -14,6 +14,8 @@ class Utilisateur(models.Model):
 
 class Voiture(models.Model):
     car_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    proprietaire = models.ForeignKey('Utilisateur',related_name='owned_set', on_delete=models.CASCADE)
+    matricule = models.CharField(max_length=7, blank=True, null=True)
     nom_modele = models.CharField(max_length=45, blank=True, null=True)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modif = models.DateTimeField(auto_now=True)
@@ -23,7 +25,7 @@ class Voiture(models.Model):
 
 class Parametres_voiture(models.Model):
     #Table qui étend la table voiture
-    #parametres en flottant car on en a besoin pour les methodes
+    #parametres en flottant car on en aura besoin pour les methodes
     #numeriques qu'on va utiliser pour le calcul de la conso
     parametre_1 = models.FloatField(default=0)
     parametre_2 = models.FloatField(default=0)
@@ -35,15 +37,14 @@ class Parametres_voiture(models.Model):
 class Utilisateur_loue_voiture(models.Model):
     utilisateur = models.ForeignKey('Utilisateur',related_name='cars_set', on_delete=models.CASCADE)
     voiture = models.ForeignKey('Voiture',related_name='users_set', on_delete=models.CASCADE)
-    date_debut_location = models.DateTimeField(auto_now_add=True)
-    date_fin_location = models.DateTimeField(auto_now=True)
-    consommation= models.FloatField(default=0)
+    date_transaction = models.DateTimeField(auto_now=True)
+    consommation = models.FloatField(default=0)
 
     class Meta:
         unique_together = ('utilisateur','voiture')
 
     def __str__(self):
-        return 'utilisateur:\n {!s:>},\n voiture louee:\n {!s:>},\n depuis {},\n consommation: {}'.format(self.utilisateur, self.voiture, self.date_debut_location, self.consommation)
+        return 'utilisateur:\n {!s:>},\n voiture louee:\n {!s:>},\n depuis {},\n consommation: {}'.format(self.utilisateur, self.voiture, self.date_transaction, self.consommation)
 
 
 

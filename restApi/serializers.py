@@ -4,8 +4,8 @@ from .models import Utilisateur, Voiture, Parametres_voiture, Utilisateur_loue_v
 class ULVSerializer(serializers.ModelSerializer):
     class Meta:
         model = Utilisateur_loue_voiture
-        fields = ('utilisateur','voiture','consommation','date_debut_location', 'date_fin_location')
-        read_only_fields = ('date_debut_location', 'date_fin_location')
+        fields = ('utilisateur','voiture','consommation','date_transaction',)
+        read_only_fields = ('date_transaction',)
     
     def create(self,validated_data):
         #get id utilisateur et voiture et cherher des correspondance dans la bdd pour creer
@@ -41,7 +41,7 @@ class VoitureSerializer(serializers.ModelSerializer):
     users_set = ULVSerializer(many=True,required=False,read_only=True)
     class Meta:
         model = Voiture
-        fields = ('car_id','nom_modele', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
+        fields = ('car_id','nom_modele','proprietaire', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
         read_only_fields = ('car_id','date_creation', 'date_modif')
 
     def create(self, validated_data):
