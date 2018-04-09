@@ -35,13 +35,11 @@ class Parametres_voiture(models.Model):
         return "{!s:>},\n parametre_1: {},\n parametre_2: {},\n derniere modification: {}".format(self.voiture, self.parametre_1,self.parametre_2, self.date_modif)
 
 class Utilisateur_loue_voiture(models.Model):
+    ulv_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     utilisateur = models.ForeignKey('Utilisateur',related_name='cars_set', on_delete=models.CASCADE)
     voiture = models.ForeignKey('Voiture',related_name='users_set', on_delete=models.CASCADE)
     date_transaction = models.DateTimeField(auto_now=True)
     consommation = models.FloatField(default=0)
-
-    class Meta:
-        unique_together = ('utilisateur','voiture')
 
     def __str__(self):
         return 'utilisateur:\n {!s:>},\n voiture louee:\n {!s:>},\n depuis {},\n consommation: {}'.format(self.utilisateur, self.voiture, self.date_transaction, self.consommation)
