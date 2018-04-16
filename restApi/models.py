@@ -15,7 +15,7 @@ class Utilisateur(models.Model):
 class Voiture(models.Model):
     car_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     proprietaire = models.ForeignKey('Utilisateur',related_name='owned_set', on_delete=models.CASCADE)
-    matricule = models.CharField(max_length=7, blank=True, null=True)
+    matricule = models.CharField(max_length=9, blank=True, null=True)
     nom_modele = models.CharField(max_length=45, blank=True, null=True)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modif = models.DateTimeField(auto_now=True)

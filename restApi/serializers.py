@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from .models import Utilisateur, Voiture, Parametres_voiture, Utilisateur_loue_voiture
 
 class ULVSerializer(serializers.ModelSerializer):
@@ -31,19 +32,19 @@ class FullVoitureSerializer(serializers.ModelSerializer):
     users_set = ULVSerializer(many=True,required=False,read_only=True)
     class Meta:
         model = Voiture
-        fields = ('car_id','nom_modele','proprietaire', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
-        read_only_fields = ('car_id','date_creation', 'date_modif')
+        fields = ('matricule','nom_modele','proprietaire', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
+        read_only_fields = ('date_creation', 'date_modif')
 
     def validate(self, data):
         try:
-            car = Voiture.objects.get(car_id=data['car_id'])
+            car = Voiture.objects.get(matricule=data['matricule'])
             if car is not None:
                 owner = car.proprietaire
                 if owner.user_id != data['proprietaire']:
                     raise serializers.ValidationError("Must be car owner to proceed")
-            return data
-        except KeyError:
-            return data
+            return super(FullVoitureSerializer,self).validate(data)
+        except ObjectDoesNotExist:
+            return super(FullVoitureSerializer,self).validate(data)
         
         
 
@@ -71,15 +72,15 @@ class ConsoVoitureSerializer(serializers.ModelSerializer):
     users_set = users_set = ULVSerializer(many=True,required=False,read_only=True)
     class Meta:
         model = Voiture
-        fields = ('car_id','nom_modele', 'users_set')
-        read_only_fields = ('car_id',)
+        fields = ('matricule','nom_modele', 'users_set')
+        read_only_fields = ('matricule',)
 
 class BasicVoitureSerializer(serializers.ModelSerializer):
 
         class Meta:
             model = Voiture
-            fields = ('car_id','nom_modele','date_creation')
-            read_only_fields = ('car_id','date_creation')
+            fields = ('matricule','nom_modele','date_creation')
+            read_only_fields = ('matricule','date_creation')
 
 class FullUtilisateurSerializer(serializers.ModelSerializer):
     owned_set = BasicVoitureSerializer(many=True,required=False,read_only=True)

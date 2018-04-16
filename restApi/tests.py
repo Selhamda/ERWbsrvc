@@ -35,7 +35,7 @@ class  VoitureTestCase(TestCase):
     def setUp(self):
         self.owner = Utilisateur(nom='test owner')
         self.owner.save()
-        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner)
+        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
     
     def test_model_can_create_instance(self):
         compte = Voiture.objects.count()
@@ -54,7 +54,7 @@ class  Parametres_voitureTestCase(TestCase):
     def setUp(self):
         self.owner = Utilisateur(nom='test owner')
         self.owner.save()
-        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner)
+        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
         self.testvoiture.save()
         self.testparam = Parametres_voiture(voiture=self.testvoiture)
     
@@ -76,7 +76,7 @@ class ULVTestCase(TestCase):
     def setUp(self):
         self.owner = Utilisateur(nom='test owner')
         self.owner.save()
-        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner)
+        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
         self.testvoiture.save()
         self.testparam = Parametres_voiture(voiture=self.testvoiture)
         self.testparam.save()
@@ -122,7 +122,7 @@ class VoitureSerializerTestCase(TestCase):
             self.users.append(Utilisateur.objects.create(nom = 'user'+str(i+1)))
         
         for i in range(self.nb_cars):
-            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1)))
+            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
         
         for car in self.cars:
             Parametres_voiture.objects.create(parametre_1=40*random(),parametre_2=120*random(),voiture=car)
@@ -142,7 +142,7 @@ class VoitureSerializerTestCase(TestCase):
         for car in self.cars:
             self.reponses.append(self.client.get(
                 reverse('details_voiture',
-                kwargs={'car_id': car.car_id}),
+                kwargs={'matricule': car.matricule}),
                 format="json"
             ))
 
@@ -150,13 +150,15 @@ class VoitureSerializerTestCase(TestCase):
         for car in self.cars:
             self.reponses2.append(self.client.get(
                 reverse('consommation',
-                kwargs={'car_id': car.car_id}),
+                kwargs={'matricule': car.matricule}),
                 format="json"
             ))
 
         #setup for create test
+        mat = str(randint(100,999))+'-AA-'+str(randint(10,99))
         self.voiture_data = {
             'nom_modele' : 'renaut 205',
+            'matricule': mat,
             'proprietaire': FullUtilisateurSerializer(instance=self.owner).data.get('user_id'),
             'parametres_voiture' : {'parametre_1' : 42,'parametre_2' : 777,},
         }
@@ -169,13 +171,13 @@ class VoitureSerializerTestCase(TestCase):
         #setup for update test
         self.new_voiture_data = {
             'nom_modele' : 'peugeot 208',
+            'matricule' : str(randint(100,999))+'-AA-'+str(randint(10,99)),
             'proprietaire': FullUtilisateurSerializer(instance=self.owner).data.get('user_id'),
             'parametres_voiture' : {'parametre_1': 7, 'parametre_2': 23,},
         }
-        voit_id = Voiture.objects.get(nom_modele='renaut 205').car_id
         self.reponses.append(self.client.put(
             reverse('updestroy',
-            kwargs ={'car_id': voit_id}),
+            kwargs ={'matricule': mat}),
             self.new_voiture_data,
             format="json"
             ))
@@ -185,7 +187,7 @@ class VoitureSerializerTestCase(TestCase):
         self.reponses.append(self.client.delete(
             reverse(
                 'updestroy',
-                kwargs = {'car_id': voit_id,},
+                kwargs = {'matricule': mat,},
             ),
             {'proprietaire': FullUtilisateurSerializer(instance=self.owner).data.get('user_id')},
             format = "json"
@@ -241,7 +243,7 @@ class UtilisateurSerializerTestCase(TestCase):
             self.users.append(Utilisateur.objects.create(nom = 'user'+str(i+1)))
         
         for i in range(self.nb_cars):
-            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1)))
+            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
         
         for car in self.cars:
             Parametres_voiture.objects.create(parametre_1=40*random(),parametre_2=120*random(),voiture=car)
@@ -299,7 +301,7 @@ class UtilisateurSerializerTestCase(TestCase):
 
         #print(self.reponse.content)
         self.assertEqual(self.reponse.status_code, status.HTTP_201_CREATED)
- 
+
     def test_serializer_can_retrieve_cars(self):
         #test si on peut recup une instance      
         for i in range(self.nb_users):
@@ -336,7 +338,7 @@ class ULVSerializerTestCase(TestCase):
             self.users.append(Utilisateur.objects.create(nom = 'user'+str(i+1)))
         
         for i in range(self.nb_cars):
-            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1)))
+            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
         
         for car in self.cars:
             Parametres_voiture.objects.create(parametre_1=40*random(),parametre_2=120*random(),voiture=car)
@@ -344,13 +346,13 @@ class ULVSerializerTestCase(TestCase):
         for user in self.users:
             self.ulv_data.append({
                 'utilisateur': FullUtilisateurSerializer(instance=user).data.get('user_id'),
-                'voiture' : BasicVoitureSerializer(instance=self.cars[0]).data.get('car_id'),
+                'voiture' : BasicVoitureSerializer(instance=self.cars[0]).data.get('matricule'),
                 'consommation' : 100*random(),
                 })
         for i in range(1,self.nb_users):
             self.ulv_data.append({
                 'utilisateur': FullUtilisateurSerializer(instance=self.users[i]).data.get('user_id'),
-                'voiture' : BasicVoitureSerializer(instance=self.cars[1]).data.get('car_id'),
+                'voiture' : BasicVoitureSerializer(instance=self.cars[1]).data.get('matricule'),
                 'consommation' : 100**random() ,
                 })
         for i in range(2*self.nb_users-1):
@@ -387,8 +389,8 @@ class ULVSerializerTestCase(TestCase):
             ),
             self.new_ulv_data,
             format="json"
-        ))
-        """
+        ))"""
+        
 
         #setup for delete test
         self.nb_ulv = Utilisateur_loue_voiture.objects.count()

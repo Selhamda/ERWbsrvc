@@ -21,6 +21,12 @@ class ULVCreateView(generics.CreateAPIView):
     queryset = Utilisateur_loue_voiture.objects.all()
     serializer_class = ULVSerializer
 
+    def create(self,request,*args,**kwargs):
+        mat = request.data["voiture"]
+        voit_id = Voiture.objects.get(matricule=mat).car_id
+        request.data["voiture"] = voit_id
+        return super(ULVCreateView,self).create(request,*args,**kwargs)
+
 """    
 GET Handling Views
 """
@@ -28,13 +34,13 @@ GET Handling Views
 class FullVoitureRetrieveView(generics.RetrieveAPIView):
     queryset = Voiture.objects.all()
     serializer_class = FullVoitureSerializer
-    lookup_field = 'car_id'
+    lookup_field = 'matricule'
 
 
 class ConsoVoitureRetrieveView(generics.RetrieveAPIView):
     queryset = Voiture.objects.all()
     serializer_class = ConsoVoitureSerializer
-    lookup_field = 'car_id'
+    lookup_field = 'matricule'
 
 
 class UtilisateurRUDView(generics.RetrieveUpdateDestroyAPIView):
@@ -49,7 +55,7 @@ UPDATE Handling Views
 class FullVoitureUDView(generics.UpdateAPIView, generics.DestroyAPIView):
     queryset = Voiture.objects.all()
     serializer_class = FullVoitureSerializer
-    lookup_field = 'car_id'
+    lookup_field = 'matricule'
 
 """    
 DELETE Handling Views
@@ -57,6 +63,6 @@ DELETE Handling Views
 class ULVDestroyView(generics.DestroyAPIView):
     queryset = Utilisateur_loue_voiture.objects.all()
     serializer_class = ULVSerializer
-    lookup_field = ('ulv_id')
+    lookup_field = 'ulv_id'
 
 
