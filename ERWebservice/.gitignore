@@ -1,0 +1,48 @@
+# .gitignore
+# Project files and directories
+/ERWebservice/local_settings.py
+/ERWebservice/static/
+/ERWebservice/tmp/
+/ERWebservice/media/
+/ERWebservice/projet/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+# Translations
+*.pot
+
+# Django stuff:
+*.log
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Dev db
+db.sqlite3
