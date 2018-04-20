@@ -1,1 +1,1 @@
-/usr/lib/python3.6/codecs.py
+/usr/local/lib/python3.6/codecs.py

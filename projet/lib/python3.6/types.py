@@ -1,1 +1,1 @@
-/usr/lib/python3.6/types.py
+/usr/local/lib/python3.6/types.py

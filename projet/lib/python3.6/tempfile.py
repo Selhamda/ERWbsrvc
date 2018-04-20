@@ -1,1 +1,1 @@
-/usr/lib/python3.6/tempfile.py
+/usr/local/lib/python3.6/tempfile.py
