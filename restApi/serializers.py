@@ -8,14 +8,14 @@ class ULVSerializer(serializers.ModelSerializer):
         fields = ('utilisateur','voiture','consommation','date_transaction','ulv_id')
         read_only_fields = ('date_transaction','ulv_id')
         extra_kwargs = {'voiture': {'write_only': True}}
-    
+
     def create(self,validated_data):
         #get id utilisateur et voiture et cherher des correspondance dans la bdd pour creer
         user = validated_data.pop('utilisateur')
         car= validated_data.pop('voiture')
         ulv = Utilisateur_loue_voiture.objects.create(utilisateur=user,voiture=car,**validated_data)
         return ulv
-    
+
     def update(self, instance, validated_data):
         #maj conso sur la carte ulv
         instance.consommation = validated_data.get('consommation')
@@ -45,8 +45,8 @@ class FullVoitureSerializer(serializers.ModelSerializer):
             return super(FullVoitureSerializer,self).validate(data)
         except ObjectDoesNotExist:
             return super(FullVoitureSerializer,self).validate(data)
-        
-        
+
+
 
     def create(self, validated_data):
         parametres_data = validated_data.pop('parametres_voiture')
@@ -54,7 +54,7 @@ class FullVoitureSerializer(serializers.ModelSerializer):
         voiture = Voiture.objects.create(proprietaire=owner,**validated_data)
         Parametres_voiture.objects.create(voiture=voiture,**parametres_data)
         return voiture
-    
+
     def update(self, instance, validated_data):
         parametres_data = validated_data.get('parametres_voiture')
         new_param_1 = parametres_data.get('parametre_1')
@@ -65,7 +65,7 @@ class FullVoitureSerializer(serializers.ModelSerializer):
             instance.parametres_voiture.parametre_2 = new_param_2
         new_model_name = validated_data.get('nom_modele')
         if new_model_name is not None:
-            instance.nom_modele = new_model_name 
+            instance.nom_modele = new_model_name
         return instance
 
 class ConsoVoitureSerializer(serializers.ModelSerializer):

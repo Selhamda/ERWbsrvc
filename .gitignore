@@ -46,3 +46,6 @@ target/
 
 # Dev db
 db.sqlite3
+
+# Text backup files
+*.bak
