@@ -9,7 +9,7 @@ class Utilisateur(models.Model):
     date_modif = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "id:{},\n nom:{},\n ajouté le: {}".format(self.user_id, self.nom, self.date_creation)
+        return "id:{},\n ajouté le: {}".format(self.user_id, self.date_creation)
 
 class Voiture(models.Model):
     car_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
