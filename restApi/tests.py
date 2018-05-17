@@ -361,7 +361,7 @@ class ULVSerializerTestCase(TestCase):
                 self.ulv_data[i],
                 format="json"
             ))
-        #setup for unique testing
+        #for unique testing
         self.ulv_data.append({
             'utilisateur': FullUtilisateurSerializer(instance=self.users[1]).data.get('user_id'),
             'voiture' : BasicVoitureSerializer(instance=self.cars[1]).data.get('matricule'),
@@ -387,7 +387,7 @@ class ULVSerializerTestCase(TestCase):
         ))
 
     def test_serializer_can_create(self):
-        for i in range(self.nb_cars + self.nb_users+1):
+        for i in range(self.nb_cars + self.nb_users):
             #test si on peut creer une instance du modele
             print(self.reponses[i].content)
             self.assertEqual(self.reponses[i].status_code, status.HTTP_201_CREATED)
