@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware'
 ]
 
 ROOT_URLCONF = 'ERWebservice.urls'
@@ -122,6 +123,18 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+# Email setup
+ADMINS = (
+    ('Salimeche','easyride.4dm1n@gmail.com'),
+)
+MANAGERS = ADMINS
+
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = os.environ.get('SENDGRID_USERNAME', '')
+EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_PASSWORD', '')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 
 # Static files (CSS, JavaScript, Images)

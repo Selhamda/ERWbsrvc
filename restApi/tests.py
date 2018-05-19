@@ -389,7 +389,7 @@ class ULVSerializerTestCase(TestCase):
     def test_serializer_can_create(self):
         for i in range(self.nb_cars + self.nb_users+1):
             #test si on peut creer une instance du modele
-            #print(self.reponses[i].content)
+            print(self.reponses[i].content)
             self.assertEqual(self.reponses[i].status_code, status.HTTP_201_CREATED)
     def test_serializer_can_destroy(self):
         new_nb_ulv = Utilisateur_loue_voiture.objects.count()

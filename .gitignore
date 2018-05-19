@@ -5,6 +5,7 @@
 /ERWebservice/tmp/
 /ERWebservice/media/
 /projet/
+api_key_code.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
