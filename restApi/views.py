@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from restApi.models import Utilisateur, Voiture, Utilisateur_loue_voiture
 from restApi.serializers import FullVoitureSerializer, ConsoVoitureSerializer, FullUtilisateurSerializer, ULVSerializer
 # Create your views here.
@@ -23,7 +24,10 @@ class ULVCreateView(generics.CreateAPIView):
 
     def create(self,request,*args,**kwargs):
         mat = request.data["voiture"]
-        voit_id = Voiture.objects.get(matricule=mat).car_id
+        try:
+            voit_id = Voiture.objects.get(matricule=mat).car_id
+        except Voiture.DoesNotExist:
+            return Http404("Pas de voiture de matricule"+mat+"trouvée")
         request.data["voiture"] = voit_id
         return super(ULVCreateView,self).create(request,*args,**kwargs)
 
