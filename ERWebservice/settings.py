@@ -136,6 +136,8 @@ EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_PASSWORD', '')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
+SERVER_EMAIL = 'error.report@easyride'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
