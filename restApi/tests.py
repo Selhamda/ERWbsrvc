@@ -9,7 +9,7 @@ from decimal import Decimal
 # Create your tests here.
 
 
-"""
+
 #######Test cases for models
 #####
 ###
@@ -314,7 +314,7 @@ class UtilisateurSerializerTestCase(TestCase):
         #test si on peut suppr un tuilisateur
         new_nb = Utilisateur.objects.count()
         self.assertTrue(new_nb<self.nb)
-"""
+
 
 class ULVSerializerTestCase(TestCase):
 
@@ -400,14 +400,14 @@ class ULVSerializerTestCase(TestCase):
     def test_serializer_can_create(self):
         for i in range(self.nb_cars + self.nb_users):
             #test si on peut creer une instance du modele
-            print(self.reponses[i].content)
+            #print(self.reponses[i].content)
             self.assertEqual(self.reponses[i].status_code, status.HTTP_201_CREATED)
 
     def test_serializer_can_destroy(self):
         new_nb_ulv = Utilisateur_loue_voiture.objects.count()
         self.assertTrue(new_nb_ulv<self.nb_ulv)
     def test_unique_validation(self):
-        print(self.reponses[2*self.nb_users-1].content)
-        print(self.reponses[2*self.nb_users].content)
+        #print(self.reponses[2*self.nb_users-1].content)
+        #print(self.reponses[2*self.nb_users].content)
         self.assertEqual(self.reponses[2*self.nb_users-1].status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(self.reponses[2*self.nb_users].status_code, status.HTTP_400_BAD_REQUEST)
