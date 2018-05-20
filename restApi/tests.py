@@ -9,7 +9,7 @@ from decimal import Decimal
 # Create your tests here.
 
 
-
+"""
 #######Test cases for models
 #####
 ###
@@ -314,7 +314,7 @@ class UtilisateurSerializerTestCase(TestCase):
         #test si on peut suppr un tuilisateur
         new_nb = Utilisateur.objects.count()
         self.assertTrue(new_nb<self.nb)
-
+"""
 
 class ULVSerializerTestCase(TestCase):
 
@@ -366,11 +366,22 @@ class ULVSerializerTestCase(TestCase):
             'utilisateur': FullUtilisateurSerializer(instance=self.users[1]).data.get('user_id'),
             'voiture' : BasicVoitureSerializer(instance=self.cars[1]).data.get('matricule'),
             'consommation' : 100**random() ,
+            'nom': 'ulv_user'+str(3),
+        })
+        self.reponses.append(self.client.post(
+            reverse('creer_ulv'),
+            self.ulv_data[2*self.nb_users-1],
+            format="json"
+        ))
+        self.ulv_data.append({
+            'utilisateur': FullUtilisateurSerializer(instance=self.users[0]).data.get('user_id'),
+            'voiture' : BasicVoitureSerializer(instance=self.cars[1]).data.get('matricule'),
+            'consommation' : 100**random() ,
             'nom': 'ulv_user'+str(2),
         })
         self.reponses.append(self.client.post(
             reverse('creer_ulv'),
-            self.ulv_data[-1],
+            self.ulv_data[2*self.nb_users],
             format="json"
         ))
 
@@ -387,10 +398,16 @@ class ULVSerializerTestCase(TestCase):
         ))
 
     def test_serializer_can_create(self):
-        for i in range(self.nb_cars + self.nb_users+1):
+        for i in range(self.nb_cars + self.nb_users):
             #test si on peut creer une instance du modele
             print(self.reponses[i].content)
             self.assertEqual(self.reponses[i].status_code, status.HTTP_201_CREATED)
+
     def test_serializer_can_destroy(self):
         new_nb_ulv = Utilisateur_loue_voiture.objects.count()
         self.assertTrue(new_nb_ulv<self.nb_ulv)
+    def test_unique_validation(self):
+        print(self.reponses[2*self.nb_users-1].content)
+        print(self.reponses[2*self.nb_users].content)
+        self.assertEqual(self.reponses[2*self.nb_users-1].status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(self.reponses[2*self.nb_users].status_code, status.HTTP_400_BAD_REQUEST)

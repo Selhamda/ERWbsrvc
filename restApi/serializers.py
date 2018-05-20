@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Count
+from django.db.models import Sum
 from .models import Utilisateur, Voiture, Parametres_voiture, Utilisateur_loue_voiture
 
 class ULVSerializer(serializers.ModelSerializer):
@@ -38,16 +38,18 @@ class ULVSerializer(serializers.ModelSerializer):
         except KeyError:
             raise serializers.ValidationError("nom field is required.")
 
-
-        usr_query = Utilisateur_loue_voiture.objects.filter(voiture=car, nom=name)
-        if usr_query.exists():
-            names = Utilisateur_loue_voiture.objects.annotate(num_names=Count('utilisateur'))
-            if names[0].utilisateur != util:
+        #je cree une aggregation sur la table en comptant les ulv par apparition d'un user
+        ulvs = Utilisateur_loue_voiture.objects.values('utilisateur','nom').annotate(Sum('consommation'))
+        #partie pour empecher un user d'utiliser un nom existant
+        for ulv in ulvs:
+            if ulv['utilisateur'] != util.user_id and ulv['nom'] == name:
                 raise serializers.ValidationError('Selected name already exists.')
-            else:
-                return super(ULVSerializer,self).validate(data)
-        else:
-            return super(ULVSerializer,self).validate(data)
+
+            #partie pour empecher un user de s'inscrire avec deux noms differents
+            elif ulv['utilisateur'] == util.user_id and ulv['nom'] != name:
+                raise serializers.ValidationError('Cannot subscribe to same car with different names')
+
+        return super(ULVSerializer,self).validate(data)
 
 class ParametresVoitureSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,20 +64,6 @@ class FullVoitureSerializer(serializers.ModelSerializer):
         model = Voiture
         fields = ('matricule','nom_modele','proprietaire', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
         read_only_fields = ('date_creation', 'date_modif')
-
-    def validate(self, data):
-        try:
-            car = Voiture.objects.get(matricule=data['matricule'])
-            if car is not None:
-                owner = car.proprietaire
-                if owner.user_id != data['proprietaire']:
-                    data.pop['proprietaire']
-                    redirect('consommation',permanent=True,**data)
-            return super(FullVoitureSerializer,self).validate(data)
-        except Voiture.DoesNotExist:
-            return super(FullVoitureSerializer,self).validate(data)
-
-
 
     def create(self, validated_data):
         parametres_data = validated_data.pop('parametres_voiture')

@@ -9,7 +9,7 @@ class Utilisateur(models.Model):
     date_modif = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "id:{},\n ajouté le: {}".format(self.user_id, self.date_creation)
+        return "{{\n \t user_id : {},\n \t ajouté le : {}\n}}".format(self.user_id, self.date_creation)
 
 class Voiture(models.Model):
     car_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -20,7 +20,7 @@ class Voiture(models.Model):
     date_modif = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "id: {},\n nom de modele: {},\n ajoutée le: {}".format(self.car_id, self.nom_modele, self.date_creation)
+        return "{{\n \t car_id : {},\n \t nom_modele : {},\n \t date_creation : {},\n \t date_modif : {} \n}}".format(self.car_id, self.nom_modele, self.date_creation, self.date_modif)
 
 class Parametres_voiture(models.Model):
     #Table qui étend la table voiture
@@ -31,7 +31,7 @@ class Parametres_voiture(models.Model):
     date_modif = models.DateTimeField(auto_now=True)
     voiture = models.OneToOneField('Voiture', models.CASCADE, null=True)
     def __str__(self):
-        return "{!s:>},\n parametre_1: {},\n parametre_2: {},\n derniere modification: {}".format(self.voiture, self.parametre_1,self.parametre_2, self.date_modif)
+        return " {!s:>},{{\n \t parametre_1 : {},\n \t parametre_2 : {},\n \t date_modif : {} \n}}".format(self.voiture, self.parametre_1,self.parametre_2, self.date_modif)
 
 class Utilisateur_loue_voiture(models.Model):
     ulv_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -42,4 +42,4 @@ class Utilisateur_loue_voiture(models.Model):
     consommation = models.FloatField(default=0)
 
     def __str__(self):
-        return 'utilisateur:\n {!s:>},\n voiture louee:\n {!s:>},\n depuis {},\n consommation: {}'.format(self.utilisateur, self.voiture, self.date_transaction, self.consommation)
+        return "{{\n \t utilisateur : {!s:>},\n \t voiture_louee : {!s:>},\n \t date_transaction : {},\n \t consommation : {}\n}}".format(self.utilisateur, self.voiture, self.date_transaction, self.consommation)
