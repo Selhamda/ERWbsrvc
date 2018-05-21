@@ -169,7 +169,7 @@ class VoitureSerializerTestCase(TestCase):
             self.voiture_data,
             format="json"
         )
-
+        
         #setup for update test
         self.new_voiture_data = {
             'nom_modele' : 'peugeot 208',

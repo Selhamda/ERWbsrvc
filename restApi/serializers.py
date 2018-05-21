@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueValidator
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
@@ -64,6 +64,12 @@ class FullVoitureSerializer(serializers.ModelSerializer):
         model = Voiture
         fields = ('matricule','nom_modele','proprietaire', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
         read_only_fields = ('date_creation', 'date_modif')
+        extra_kwargs = {
+            'matricule': {
+                'validators': [UniqueValidator(Voiture.objects.all())]
+            }
+        }
+
 
     def create(self, validated_data):
         parametres_data = validated_data.pop('parametres_voiture')
