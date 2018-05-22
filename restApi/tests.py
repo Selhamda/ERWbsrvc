@@ -13,6 +13,7 @@ from decimal import Decimal
 #######Test cases for models
 #####
 ###
+
 class  UtilisateurTestCase(TestCase):
 
     def setUp(self):
@@ -138,7 +139,14 @@ class VoitureSerializerTestCase(TestCase):
             self.ulvs.append(Utilisateur_loue_voiture.objects.create(
                 utilisateur = self.users[i],
                 voiture = self.cars[1],
-                consommation = 100**random() ,
+                consommation = 10,
+                nom = 'voit_user'+str(i+1),
+                ))
+        for i in range(1,self.nb_users):
+            self.ulvs.append(Utilisateur_loue_voiture.objects.create(
+                utilisateur = self.users[i],
+                voiture = self.cars[1],
+                consommation = 15,
                 nom = 'voit_user'+str(i+1),
                 ))
         for car in self.cars:
@@ -169,7 +177,7 @@ class VoitureSerializerTestCase(TestCase):
             self.voiture_data,
             format="json"
         )
-        
+
         #setup for update test
         self.new_voiture_data = {
             'nom_modele' : 'peugeot 208',

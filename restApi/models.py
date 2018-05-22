@@ -40,6 +40,7 @@ class Utilisateur_loue_voiture(models.Model):
     nom = models.CharField(max_length=45, null=True)
     date_transaction = models.DateTimeField(auto_now=True)
     consommation = models.FloatField(default=0)
+    titre_conso =  models.CharField(max_length=45, null=True)
 
     def __str__(self):
         return "{{\n \t utilisateur : {!s:>},\n \t voiture_louee : {!s:>},\n \t date_transaction : {},\n \t consommation : {}\n}}".format(self.utilisateur, self.voiture, self.date_transaction, self.consommation)

@@ -5,10 +5,26 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from .models import Utilisateur, Voiture, Parametres_voiture, Utilisateur_loue_voiture
 
+class FilteredListSerializer(serializers.ListSerializer):
+
+    def to_representation(self, data):
+        data = data.values('utilisateur','nom').annotate(Sum('consommation'))
+        output = dict()
+        for ulv in data:
+            dico = {
+                'user_id' : ulv['utilisateur'],
+                'solde' : ulv['consommation__sum'],
+            }
+            output.update({
+                ulv['nom'] : dico,
+            })
+        return output
+
 class ULVSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Utilisateur_loue_voiture
-        fields = ('utilisateur','nom','voiture','consommation','date_transaction','ulv_id')
+        fields = ('utilisateur','nom','voiture','consommation','date_transaction','ulv_id','titre_conso')
         read_only_fields = ('date_transaction','ulv_id')
         extra_kwargs = {
             'voiture': {'write_only': True},
@@ -51,6 +67,10 @@ class ULVSerializer(serializers.ModelSerializer):
 
         return super(ULVSerializer,self).validate(data)
 
+class FilteredULVSerializer(ULVSerializer):
+    class Meta(ULVSerializer.Meta):
+        list_serializer_class = FilteredListSerializer
+
 class ParametresVoitureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parametres_voiture
@@ -59,7 +79,11 @@ class ParametresVoitureSerializer(serializers.ModelSerializer):
 
 class FullVoitureSerializer(serializers.ModelSerializer):
     parametres_voiture = ParametresVoitureSerializer()
-    users_set = ULVSerializer(many=True,required=False,read_only=True)
+    users_set = FilteredULVSerializer(
+        many=True,
+        required=False,
+        read_only=True
+    )
     class Meta:
         model = Voiture
         fields = ('matricule','nom_modele','proprietaire', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
