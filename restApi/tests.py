@@ -213,7 +213,7 @@ class VoitureSerializerTestCase(TestCase):
     def test_serializer_can_retrieve_users(self):
         #test si on peut afficher les details de la voiture
         for i in range(self.nb_cars):
-            #print(self.reponses[i].content)
+            print(self.reponses[i].content)
             self.assertEqual(self.reponses[i].status_code, status.HTTP_200_OK)
 
     def test_serializer_can_retrieve_consommation(self):

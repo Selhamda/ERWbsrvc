@@ -9,15 +9,14 @@ class FilteredListSerializer(serializers.ListSerializer):
 
     def to_representation(self, data):
         data = data.values('utilisateur','nom').annotate(Sum('consommation'))
-        output = dict()
+        output = []
         for ulv in data:
             dico = {
+                'nom' : ulv['nom'],
                 'user_id' : ulv['utilisateur'],
                 'solde' : ulv['consommation__sum'],
             }
-            output.update({
-                ulv['nom'] : dico,
-            })
+            output.append(dico)
         return output
 
 class ULVSerializer(serializers.ModelSerializer):
