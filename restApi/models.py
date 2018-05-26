@@ -7,7 +7,7 @@ class Utilisateur(models.Model):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modif = models.DateTimeField(auto_now=True)
-    email = models.CharField(max_length=254, null=True)
+
     def __str__(self):
         return "{{\n \t user_id : {},\n \t ajouté le : {}\n}}".format(self.user_id, self.date_creation)
 
