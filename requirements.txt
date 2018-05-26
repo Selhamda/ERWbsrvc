@@ -4,5 +4,6 @@ django-rest-framework==0.1.0
 djangorestframework==3.8.2
 gunicorn==19.7.1
 psycopg2==2.7.4
+pyotp==2.2.6
 pytz==2018.4
 whitenoise==3.3.1

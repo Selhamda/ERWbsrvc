@@ -4,20 +4,8 @@ from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from .models import Utilisateur, Voiture, Parametres_voiture, Utilisateur_loue_voiture
+from .validators import matricule_syntax, ConsoFloatValidator
 
-class FilteredListSerializer(serializers.ListSerializer):
-
-    def to_representation(self, data):
-        data = data.values('utilisateur','nom').annotate(Sum('consommation'))
-        output = []
-        for ulv in data:
-            dico = {
-                'nom' : ulv['nom'],
-                'user_id' : ulv['utilisateur'],
-                'solde' : ulv['consommation__sum'],
-            }
-            output.append(dico)
-        return output
 
 class ULVSerializer(serializers.ModelSerializer):
 
@@ -27,6 +15,9 @@ class ULVSerializer(serializers.ModelSerializer):
         read_only_fields = ('date_transaction','ulv_id')
         extra_kwargs = {
             'voiture': {'write_only': True},
+            'consommation': {
+                'validators':[ConsoFloatValidator(field='consommation')]
+            }
         }
 
     def create(self,validated_data):
@@ -66,6 +57,24 @@ class ULVSerializer(serializers.ModelSerializer):
 
         return super(ULVSerializer,self).validate(data)
 
+###########
+###Pour voiture
+###########
+
+class FilteredListSerializer(serializers.ListSerializer):
+
+    def to_representation(self, data):
+        info = data.values('utilisateur','nom').annotate(Sum('consommation'))
+        output = []
+        for ulv in info:
+            dico = {
+                'nom' : ulv['nom'],
+                'user_id' : ulv['utilisateur'],
+                'solde' : ulv['consommation__sum'],
+            }
+            output.append(dico)
+        return output
+
 class FilteredULVSerializer(ULVSerializer):
     class Meta(ULVSerializer.Meta):
         list_serializer_class = FilteredListSerializer
@@ -89,7 +98,7 @@ class FullVoitureSerializer(serializers.ModelSerializer):
         read_only_fields = ('date_creation', 'date_modif')
         extra_kwargs = {
             'matricule': {
-                'validators': [UniqueValidator(Voiture.objects.all())]
+                'validators': [UniqueValidator(Voiture.objects.all()), matricule_syntax]
             }
         }
 
@@ -115,11 +124,19 @@ class FullVoitureSerializer(serializers.ModelSerializer):
         return instance
 
 class ConsoVoitureSerializer(serializers.ModelSerializer):
-    users_set = ULVSerializer(many=True,required=False,read_only=True)
+    users_set = ULVSerializer(
+        many=True,
+        required=False,
+        read_only=True
+    )
     class Meta:
         model = Voiture
         fields = ('matricule','nom_modele', 'users_set')
         read_only_fields = ('matricule',)
+
+###########
+###Pour utilisateur
+###########
 
 class BasicVoitureSerializer(serializers.ModelSerializer):
 
@@ -128,10 +145,43 @@ class BasicVoitureSerializer(serializers.ModelSerializer):
             fields = ('matricule','nom_modele','date_creation')
             read_only_fields = ('matricule','date_creation')
 
+class UserListSerializer(serializers.ListSerializer):
+
+    def to_representation(self, data):
+        info = data.values('utilisateur','voiture').annotate(Sum('consommation'))
+        output = []
+        for ulv in info:
+            voit = Voiture.objects.get(car_id=ulv['voiture'])
+            matri = voit.matricule
+            name = voit.nom_modele
+            dico = {
+                'matricule' : matri,
+                'nom' : name,
+            }
+            output.append(dico)
+        return output
+
+class UserULVSerializer(ULVSerializer):
+    class Meta(ULVSerializer.Meta):
+        list_serializer_class = UserListSerializer
+
 class FullUtilisateurSerializer(serializers.ModelSerializer):
-    owned_set = BasicVoitureSerializer(many=True,required=False,read_only=True)
+    owned_set = BasicVoitureSerializer(
+        many=True,
+        required=False,
+        read_only=True
+    )
+    cars_set = UserULVSerializer(
+        many=True,
+        required=False,
+        read_only=True
+    )
     class Meta:
         #class meta lie les champs du serializer avec ceux du model
         model = Utilisateur
-        fields = ('user_id','owned_set', 'date_creation', 'date_modif')
+        fields = ('user_id', 'email', 'owned_set','cars_set', 'date_creation', 'date_modif')
         read_only_fields = ('user_id','date_creation', 'date_modif')
+
+###########
+###Pour recup compte
+###########

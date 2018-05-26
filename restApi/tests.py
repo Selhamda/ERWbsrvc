@@ -213,7 +213,7 @@ class VoitureSerializerTestCase(TestCase):
     def test_serializer_can_retrieve_users(self):
         #test si on peut afficher les details de la voiture
         for i in range(self.nb_cars):
-            print(self.reponses[i].content)
+            #print(self.reponses[i].content)
             self.assertEqual(self.reponses[i].status_code, status.HTTP_200_OK)
 
     def test_serializer_can_retrieve_consommation(self):
@@ -235,11 +235,12 @@ class VoitureSerializerTestCase(TestCase):
         self.assertTrue(new_nb<self.nb)
 
 
+
 class UtilisateurSerializerTestCase(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        #setup for retrive test
+        #setup for retrieve test
 
         self.owner = Utilisateur()
         self.owner.save()
@@ -369,11 +370,13 @@ class ULVSerializerTestCase(TestCase):
                 self.ulv_data[i],
                 format="json"
             ))
+
         #for unique testing
+        #2 users with same name
         self.ulv_data.append({
             'utilisateur': FullUtilisateurSerializer(instance=self.users[1]).data.get('user_id'),
             'voiture' : BasicVoitureSerializer(instance=self.cars[1]).data.get('matricule'),
-            'consommation' : 100**random() ,
+            'consommation' : float('nan') ,
             'nom': 'ulv_user'+str(3),
         })
         self.reponses.append(self.client.post(
@@ -381,10 +384,11 @@ class ULVSerializerTestCase(TestCase):
             self.ulv_data[2*self.nb_users-1],
             format="json"
         ))
+        #1 user with 2 names
         self.ulv_data.append({
             'utilisateur': FullUtilisateurSerializer(instance=self.users[0]).data.get('user_id'),
             'voiture' : BasicVoitureSerializer(instance=self.cars[1]).data.get('matricule'),
-            'consommation' : 100**random() ,
+            'consommation' : float('inf') ,
             'nom': 'ulv_user'+str(2),
         })
         self.reponses.append(self.client.post(
@@ -414,8 +418,9 @@ class ULVSerializerTestCase(TestCase):
     def test_serializer_can_destroy(self):
         new_nb_ulv = Utilisateur_loue_voiture.objects.count()
         self.assertTrue(new_nb_ulv<self.nb_ulv)
+
     def test_unique_validation(self):
-        #print(self.reponses[2*self.nb_users-1].content)
-        #print(self.reponses[2*self.nb_users].content)
+        print(self.reponses[2*self.nb_users-1].content)
+        print(self.reponses[2*self.nb_users].content)
         self.assertEqual(self.reponses[2*self.nb_users-1].status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(self.reponses[2*self.nb_users].status_code, status.HTTP_400_BAD_REQUEST)
