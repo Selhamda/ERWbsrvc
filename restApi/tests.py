@@ -17,7 +17,7 @@ from decimal import Decimal
 class  UtilisateurTestCase(TestCase):
 
     def setUp(self):
-        self.testusr = Utilisateur()
+        self.testusr = Utilisateur(email="user@test.com")
 
     def test_model_can_create_instance(self):
         compte = Utilisateur.objects.count()
@@ -34,7 +34,7 @@ class  UtilisateurTestCase(TestCase):
 class  VoitureTestCase(TestCase):
 
     def setUp(self):
-        self.owner = Utilisateur()
+        self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
         self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
 
@@ -53,7 +53,7 @@ class  VoitureTestCase(TestCase):
 class  Parametres_voitureTestCase(TestCase):
 
     def setUp(self):
-        self.owner = Utilisateur()
+        self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
         self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
         self.testvoiture.save()
@@ -75,13 +75,13 @@ class  Parametres_voitureTestCase(TestCase):
 class ULVTestCase(TestCase):
 
     def setUp(self):
-        self.owner = Utilisateur()
+        self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
         self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
         self.testvoiture.save()
         self.testparam = Parametres_voiture(voiture=self.testvoiture)
         self.testparam.save()
-        self.testusr = Utilisateur()
+        self.testusr = Utilisateur(email="user@test.com")
         self.testusr.save()
         self.ulv = Utilisateur_loue_voiture(utilisateur=self.testusr,voiture=self.testvoiture)
 
@@ -109,7 +109,7 @@ class VoitureSerializerTestCase(TestCase):
         self.client = APIClient()
 
         #setup for retireve test
-        self.owner = Utilisateur()
+        self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
         self.nb_cars = 2
         self.nb_users = 3
@@ -120,7 +120,7 @@ class VoitureSerializerTestCase(TestCase):
         self.reponses2 = []
 
         for i in range(self.nb_users):
-            self.users.append(Utilisateur.objects.create())
+            self.users.append(Utilisateur.objects.create(email="user"+str(i)+"@test.com"))
 
         for i in range(self.nb_cars):
             self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
@@ -242,7 +242,7 @@ class UtilisateurSerializerTestCase(TestCase):
         self.client = APIClient()
         #setup for retrieve test
 
-        self.owner = Utilisateur()
+        self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
         self.nb_cars = 2
         self.nb_users = 3
@@ -252,7 +252,7 @@ class UtilisateurSerializerTestCase(TestCase):
         self.reponses = []
 
         for i in range(self.nb_users):
-            self.users.append(Utilisateur.objects.create())
+            self.users.append(Utilisateur.objects.create(email="user"+str(i)+"@test.com"))
 
         for i in range(self.nb_cars):
             self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
@@ -281,6 +281,7 @@ class UtilisateurSerializerTestCase(TestCase):
         #setup for create test
         self.reponse = self.client.post(
             reverse('creer_utilisateur'),
+            {'email':'user@createtest.com'},
             format="json"
         )
 
@@ -331,7 +332,7 @@ class ULVSerializerTestCase(TestCase):
         self.client = APIClient()
 
         #steup for creation test
-        self.owner = Utilisateur()
+        self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
         self.nb_cars = 2
         self.nb_users = 3
@@ -341,7 +342,7 @@ class ULVSerializerTestCase(TestCase):
         self.reponses = []
 
         for i in range(self.nb_users):
-            self.users.append(Utilisateur.objects.create())
+            self.users.append(Utilisateur.objects.create(email="user"+str(i)+"@test.com"))
 
         for i in range(self.nb_cars):
             self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
@@ -420,7 +421,7 @@ class ULVSerializerTestCase(TestCase):
         self.assertTrue(new_nb_ulv<self.nb_ulv)
 
     def test_unique_validation(self):
-        print(self.reponses[2*self.nb_users-1].content)
-        print(self.reponses[2*self.nb_users].content)
+        #print(self.reponses[2*self.nb_users-1].content)
+        #print(self.reponses[2*self.nb_users].content)
         self.assertEqual(self.reponses[2*self.nb_users-1].status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(self.reponses[2*self.nb_users].status_code, status.HTTP_400_BAD_REQUEST)

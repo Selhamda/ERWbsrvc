@@ -157,3 +157,7 @@ X_FRAME_OPTIONS = 'DENY'
 import dj_database_url
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
+
+REST_FRAMEWORK = {
+    'STRICT_JSON' : (False),
+}
