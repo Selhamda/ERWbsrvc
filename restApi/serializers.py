@@ -179,7 +179,7 @@ class FullUtilisateurSerializer(serializers.ModelSerializer):
     class Meta:
         #class meta lie les champs du serializer avec ceux du model
         model = Utilisateur
-        fields = ('user_id', 'email', 'owned_set','cars_set', 'date_creation', 'date_modif')
+        fields = ('user_id','owned_set','cars_set', 'date_creation', 'date_modif')
         read_only_fields = ('user_id','date_creation', 'date_modif')
 
 ###########
