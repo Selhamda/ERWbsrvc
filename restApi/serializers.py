@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from .models import Utilisateur, Voiture, Parametres_voiture, Utilisateur_loue_voiture
-from .validators import matricule_syntax, ConsoFloatValidator
+from .validators import matricule_syntax, ConsoFloatValidator, email_syntax
 
 
 class ULVSerializer(serializers.ModelSerializer):
@@ -179,8 +179,13 @@ class FullUtilisateurSerializer(serializers.ModelSerializer):
     class Meta:
         #class meta lie les champs du serializer avec ceux du model
         model = Utilisateur
-        fields = ('user_id','owned_set','cars_set', 'date_creation', 'date_modif')
+        fields = ('user_id', 'email', 'owned_set', 'cars_set', 'date_creation', 'date_modif')
         read_only_fields = ('user_id','date_creation', 'date_modif')
+        extra_kwargs = {
+            'email':{
+                'validators':[UniqueValidator(Utilisateur.objects.all()), email_syntax]
+            }
+        }
 
 ###########
 ###Pour recup compte
