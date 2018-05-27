@@ -5,6 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from .models import Utilisateur, Voiture, Parametres_voiture, Utilisateur_loue_voiture
 from .validators import matricule_syntax, ConsoFloatValidator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 import pyotp
 
 class ULVSerializer(serializers.ModelSerializer):
@@ -229,18 +231,34 @@ class CreationOTPSerializer(OTPSerializer):
                 un intervalle de validite : les standards de l'algo recommandent 30s si les clocks sont synchro on prend 2x plus pour la marge
 
         """
+        #generation de l'otp
         user = self.validated_data['user']
         base32str = user.secret
         totp = pyotp.TOTP(base32str, interval=self.interval)
         otp = totp.now()
-        """
-            code for email sending
-        """
+
+        #envoi de l'email
+        subject = 'Account retrieval'
+        dico = {
+            'app_name' : 'EasyRide',
+            'code' : otp,
+        }
+        message = render_to_string('reset_email.html',dico)
+        recipient = self.validated_data['email']
+        sender = 'reset@easyride'
+        send_mail(
+            subject,
+            message,
+            sender,
+            [recipient],
+            fail_silently=False,
+        )
+
+        #synthese de la reponse
         reponse = {
-            'otp': otp,
             'message':'retrieval password successfully sent',
             }
-        #print(reponse)
+
         return reponse
 
 class VerifyOTPSerializer(OTPSerializer):

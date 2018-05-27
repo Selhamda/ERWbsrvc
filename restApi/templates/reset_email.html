@@ -1,0 +1,13 @@
+{% load i18n %}{% autoescape off %}
+{% blocktrans %}You're receiving this email because you requested a retrieval of your user account at {{ app_name }}.{% endblocktrans %}
+
+{% trans "Please copy the following code into the app to proceed" %}
+{% block reset_code %}
+{{ code }}
+{% endblock %}
+
+{% trans "Thanks for using our app!" %}
+
+{% blocktrans %}The {{ app_name }} team{% endblocktrans %}
+
+{% endautoescape %}
