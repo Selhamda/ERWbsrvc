@@ -13,13 +13,14 @@ def matricule_syntax(value):
             })
 
 ###Pour valider que l'email  rentre est de syntaxe correcte
+"""
 def email_syntax(value):
     pattern = re.compile("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
     if pattern.search(value) == None:
         raise ValidationError({
             'Email syntax is invalid'
             })
-
+"""
 class ConsoFloatValidator(object):
     ###Pour verifier qu'il n'ya pas eu d'erreur de calcull niveau algorithme et que
     ###la bdd ne contient que des flottants valides

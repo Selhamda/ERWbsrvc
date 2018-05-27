@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from restApi.models import Utilisateur, Voiture, Utilisateur_loue_voiture
-from restApi.serializers import FullVoitureSerializer, ConsoVoitureSerializer, FullUtilisateurSerializer, ULVSerializer
+from restApi.serializers import FullVoitureSerializer, ConsoVoitureSerializer, FullUtilisateurSerializer, ULVSerializer, CreationOTPSerializer, VerifyOTPSerializer
 # Create your views here.
 
 """
@@ -31,6 +31,30 @@ class ULVCreateView(generics.CreateAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         request.data["voiture"] = voit_id
         return super(ULVCreateView,self).create(request,*args,**kwargs)
+
+class OTPCreationView(generics.CreateAPIView):
+    queryset = Utilisateur.objects.all()
+    serializer_class = CreationOTPSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer_instance = self.get_serializer(data=request.data)
+        serializer_instance.is_valid(raise_exception=True)
+        reponse = serializer_instance.save()
+        headers = self.get_success_headers(serializer_instance.data)
+        return Response(reponse, status=status.HTTP_200_OK,headers=headers)
+
+
+
+class OTPVerifyView(generics.CreateAPIView):
+    queryset = Utilisateur.objects.all()
+    serializer_class = VerifyOTPSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer_instance = self.get_serializer(data=request.data)
+        serializer_instance.is_valid(raise_exception=True)
+        reponse = serializer_instance.save()
+        headers = self.get_success_headers(serializer_instance.data)
+        return Response(reponse, status=status.HTTP_200_OK,headers=headers)
 
 """
 GET Handling Views

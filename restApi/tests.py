@@ -425,3 +425,41 @@ class ULVSerializerTestCase(TestCase):
         #print(self.reponses[2*self.nb_users].content)
         self.assertEqual(self.reponses[2*self.nb_users-1].status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(self.reponses[2*self.nb_users].status_code, status.HTTP_400_BAD_REQUEST)
+
+class OTPSerializerTestCase(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = Utilisateur.objects.create(email="user@test.com")
+        self.data = []
+        self.reponses = []
+
+        #for otp create test
+        user_email = self.user.email
+        self.data.append({
+            'email': user_email,
+        })
+        self.reponses.append(self.client.post(
+            reverse('creer_otp'),
+            self.data[0],
+            format="json"
+        ))
+        #for otp verify test
+        self.data.append({
+            'otp' : self.reponses[0].data['otp'],
+            'email': user_email,
+        })
+
+        self.reponses.append(self.client.post(
+            reverse('verifier_otp'),
+            self.data[1],
+            format="json"
+        ))
+
+    def test_api_can_create_otp(self):
+        #print(self.reponses[0].content)
+        self.assertEqual(self.reponses[0].status_code, status.HTTP_200_OK)
+
+    def test_api_can_verify_otp(self):
+        #print(self.reponses[1].content)
+        self.assertEqual(self.reponses[0].status_code, status.HTTP_200_OK)

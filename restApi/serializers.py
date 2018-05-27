@@ -4,8 +4,8 @@ from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from .models import Utilisateur, Voiture, Parametres_voiture, Utilisateur_loue_voiture
-from .validators import matricule_syntax, ConsoFloatValidator, email_syntax
-
+from .validators import matricule_syntax, ConsoFloatValidator
+import pyotp
 
 class ULVSerializer(serializers.ModelSerializer):
 
@@ -183,10 +183,88 @@ class FullUtilisateurSerializer(serializers.ModelSerializer):
         read_only_fields = ('user_id','date_creation', 'date_modif')
         extra_kwargs = {
             'email':{
-                'validators':[UniqueValidator(Utilisateur.objects.all()), email_syntax]
+                'validators':[UniqueValidator(Utilisateur.objects.all())]
             }
         }
 
 ###########
 ###Pour recup compte
 ###########
+
+class OTPSerializer(serializers.ModelSerializer):
+    """
+        Serializer en commun pour creation et verification d'otp
+        pour factorisation de code
+
+    """
+    interval = 60
+
+    class Meta:
+        model = Utilisateur
+        fields = ('email',)
+
+    def validate(self, data):
+        val_data = super(OTPSerializer,self).validate(data)
+        try:
+            uzr = Utilisateur.objects.get(email=val_data['email'])
+            val_data.update({'user' : uzr})
+        except Utilisateur.DoesNotExist:
+            raise serializers.ValidationError('no user registered with such email address')
+        print
+        return val_data
+
+class CreationOTPSerializer(OTPSerializer):
+    """
+        Serializer pour creation des otps (one time passwords) selon un critere de temps
+        et de l'envoi des emails
+
+    """
+
+    class Meta(OTPSerializer.Meta):
+        model = Utilisateur
+
+    def save(self):
+        """
+            creation des topt (time based otp) necessite:
+                un intervalle de validite : les standards de l'algo recommandent 30s si les clocks sont synchro on prend 2x plus pour la marge
+
+        """
+        user = self.validated_data['user']
+        base32str = user.secret
+        totp = pyotp.TOTP(base32str, interval=self.interval)
+        otp = totp.now()
+        """
+            code for email sending
+        """
+        reponse = {
+            'otp': otp,
+            'message':'retrieval password successfully sent',
+            }
+        #print(reponse)
+        return reponse
+
+class VerifyOTPSerializer(OTPSerializer):
+    """
+        Pour verification des otps
+
+    """
+    otp = serializers.CharField(required=True)
+
+    class Meta(OTPSerializer.Meta):
+        model = Utilisateur
+        fields = ('otp','email')
+
+    def save(self):
+        otp = self.validated_data['otp']
+        user_secret = self.validated_data['user'].secret
+        totp = pyotp.TOTP(user_secret, interval=self.interval)
+        if totp.verify(otp):
+            reponse = {
+                'user_id' : self.validated_data['user'].user_id,
+            }
+            return reponse
+        else:
+            reponse = {
+                'message' : 'One time password does not match'
+            }
+            return reponse

@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+import pyotp
 
 # Create your models here.
 
@@ -7,7 +8,9 @@ class Utilisateur(models.Model):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modif = models.DateTimeField(auto_now=True)
-    email = models.CharField(max_length=254, null=True)
+    email = models.EmailField(max_length=254, null=True)
+    secret = models.CharField(null=False, blank=False, max_length=50, default=pyotp.random_base32())
+
     def __str__(self):
         return "{{\n \t user_id : {},\n \t ajouté le : {}\n}}".format(self.user_id, self.date_creation)
 

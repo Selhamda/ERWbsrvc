@@ -124,3 +124,5 @@ STATIC_URL = '/static/'
 REST_FRAMEWORK = {
     'STRICT_JSON' : (False),
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
