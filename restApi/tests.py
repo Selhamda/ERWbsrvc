@@ -37,7 +37,8 @@ class  VoitureTestCase(TestCase):
     def setUp(self):
         self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
-        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
+        self.parametres = Parametres_voiture.objects.create(nom_modele='testmodel')
+        self.testvoiture = Voiture(parametres_voiture=self.parametres, proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
 
     def test_model_can_create_instance(self):
         compte = Voiture.objects.count()
@@ -56,9 +57,7 @@ class  Parametres_voitureTestCase(TestCase):
     def setUp(self):
         self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
-        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
-        self.testvoiture.save()
-        self.testparam = Parametres_voiture(voiture=self.testvoiture)
+        self.testparam = Parametres_voiture(nom_modele='testmodel')
 
     def test_model_can_create_instance(self):
         compte = Parametres_voiture.objects.count()
@@ -78,10 +77,9 @@ class ULVTestCase(TestCase):
     def setUp(self):
         self.owner = Utilisateur(email="owner@owner.com")
         self.owner.save()
-        self.testvoiture = Voiture(nom_modele='test voiture', proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
+        self.parametres = Parametres_voiture.objects.create(nom_modele='testmodel')
+        self.testvoiture = Voiture(parametres_voiture=self.parametres, proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99)))
         self.testvoiture.save()
-        self.testparam = Parametres_voiture(voiture=self.testvoiture)
-        self.testparam.save()
         self.testusr = Utilisateur(email="user@test.com")
         self.testusr.save()
         self.ulv = Utilisateur_loue_voiture(utilisateur=self.testusr,voiture=self.testvoiture)
@@ -115,6 +113,7 @@ class VoitureSerializerTestCase(TestCase):
         self.nb_cars = 2
         self.nb_users = 3
         self.users = []
+        self.parametres = []
         self.cars = []
         self.ulvs = []
         self.reponses = []
@@ -123,11 +122,12 @@ class VoitureSerializerTestCase(TestCase):
         for i in range(self.nb_users):
             self.users.append(Utilisateur.objects.create(email="user"+str(i)+"@test.com"))
 
-        for i in range(self.nb_cars):
-            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
+        for i in range(3):
+            self.parametres.append(Parametres_voiture.objects.create(nom_modele='testmodel'+str(i),parametre_1=40*random(),parametre_2=120*random()))
 
-        for car in self.cars:
-            Parametres_voiture.objects.create(parametre_1=40*random(),parametre_2=120*random(),voiture=car)
+        for i in range(self.nb_cars):
+            self.cars.append(Voiture.objects.create(parametres_voiture=self.parametres[i%3], proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
+
 
         for i in range(self.nb_users):
             self.ulvs.append(Utilisateur_loue_voiture.objects.create(
@@ -150,6 +150,12 @@ class VoitureSerializerTestCase(TestCase):
                 consommation = 15,
                 nom = 'voit_user'+str(i+1),
                 ))
+        for i in range(2):
+            self.ulvs.append(Utilisateur_loue_voiture.objects.create(
+                utilisateur = self.owner,
+                voiture = self.cars[i],
+                nom = 'testowner',
+                ))
         for car in self.cars:
             self.reponses.append(self.client.get(
                 reverse('details_voiture',
@@ -168,10 +174,10 @@ class VoitureSerializerTestCase(TestCase):
         #setup for create test
         mat = str(randint(100,999))+'-AA-'+str(randint(10,99))
         self.voiture_data = {
-            'nom_modele' : 'renaut 205',
+            'parametres_voiture' : 'testmodel1',
             'matricule': mat,
             'proprietaire': FullUtilisateurSerializer(instance=self.owner).data.get('user_id'),
-            'parametres_voiture' : {'parametre_1' : 42,'parametre_2' : 777,},
+            'nom_proprietaire': 'testowner'
         }
         self.reponse = self.client.post(
             reverse('creer_voiture'),
@@ -181,10 +187,9 @@ class VoitureSerializerTestCase(TestCase):
 
         #setup for update test
         self.new_voiture_data = {
-            'nom_modele' : 'peugeot 208',
-            'matricule' : str(randint(100,999))+'-AA-'+str(randint(10,99)),
-            'proprietaire': FullUtilisateurSerializer(instance=self.owner).data.get('user_id'),
-            'parametres_voiture' : {'parametre_1': 7, 'parametre_2': 23,},
+            'proprietaire' : FullUtilisateurSerializer(instance=self.owner).data.get('user_id'),
+            'parametres_voiture' : 'testmodel0',
+            'nom_proprietaire': 'testowner1',
         }
         self.reponses.append(self.client.put(
             reverse('updestroy',
@@ -200,7 +205,6 @@ class VoitureSerializerTestCase(TestCase):
                 'updestroy',
                 kwargs = {'matricule': mat,},
             ),
-            {'proprietaire': FullUtilisateurSerializer(instance=self.owner).data.get('user_id')},
             format = "json"
         ))
 
@@ -231,10 +235,9 @@ class VoitureSerializerTestCase(TestCase):
         self.assertEqual(self.reponses[self.nb_cars].status_code, status.HTTP_200_OK)
 
     def test_serializer_can_destroy(self):
-        #test si une voiture a bien ete surpprimee
         new_nb = Voiture.objects.count()
+        #test si une voiture a bien ete surpprimee
         self.assertTrue(new_nb<self.nb)
-
 
 
 class UtilisateurSerializerTestCase(TestCase):
@@ -250,16 +253,17 @@ class UtilisateurSerializerTestCase(TestCase):
         self.users = []
         self.cars = []
         self.ulvs = []
+        self.parametres = []
         self.reponses = []
 
         for i in range(self.nb_users):
             self.users.append(Utilisateur.objects.create(email="user"+str(i)+"@test.com"))
 
-        for i in range(self.nb_cars):
-            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
+        for i in range(3):
+            self.parametres.append(Parametres_voiture.objects.create(nom_modele='testmodel'+str(i),parametre_1=40*random(),parametre_2=120*random()))
 
-        for car in self.cars:
-            Parametres_voiture.objects.create(parametre_1=40*random(),parametre_2=120*random(),voiture=car)
+        for i in range(self.nb_cars):
+            self.cars.append(Voiture.objects.create(parametres_voiture=self.parametres[i%3], proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
 
         for i in range(self.nb_users):
             self.ulvs.append(Utilisateur_loue_voiture.objects.create(
@@ -339,17 +343,19 @@ class ULVSerializerTestCase(TestCase):
         self.nb_users = 3
         self.users = []
         self.cars = []
-        self.ulv_data= []
+        self.ulv_data = []
+        self.parametres = []
         self.reponses = []
 
         for i in range(self.nb_users):
             self.users.append(Utilisateur.objects.create(email="user"+str(i)+"@test.com"))
 
-        for i in range(self.nb_cars):
-            self.cars.append(Voiture.objects.create(proprietaire=self.owner, nom_modele='car'+str(i+1), matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
+        for i in range(3):
+            self.parametres.append(Parametres_voiture.objects.create(nom_modele='testmodel'+str(i),parametre_1=40*random(),parametre_2=120*random()))
 
-        for car in self.cars:
-            Parametres_voiture.objects.create(parametre_1=40*random(),parametre_2=120*random(),voiture=car)
+        for i in range(self.nb_cars):
+            self.cars.append(Voiture.objects.create(parametres_voiture=self.parametres[i%3], proprietaire=self.owner, matricule=str(randint(100,999))+'-AA-'+str(randint(10,99))))
+
 
         for i in range(self.nb_users):
             self.ulv_data.append({
@@ -451,7 +457,6 @@ class OTPSerializerTestCase(TestCase):
             'otp' : self.reponses[0].data['otp'],
             'email': user_email,
         })
-
         self.reponses.append(self.client.post(
             reverse('verifier_otp'),
             self.data[1],

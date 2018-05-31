@@ -3,17 +3,26 @@ from rest_framework import generics
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
-from restApi.models import Utilisateur, Voiture, Utilisateur_loue_voiture
-from restApi.serializers import FullVoitureSerializer, ConsoVoitureSerializer, FullUtilisateurSerializer, ULVSerializer, CreationOTPSerializer, VerifyOTPSerializer
+from restApi.models import Utilisateur, Voiture, Utilisateur_loue_voiture, Parametres_voiture
+from restApi.serializers import FullVoitureSerializer, ConsoVoitureSerializer, FullUtilisateurSerializer, ULVSerializer, CreationOTPSerializer, VerifyOTPSerializer, ParametresVoitureSerializer
 # Create your views here.
 
 """
-POST Handling views
+    Post Handling views
 """
 
 class VoitureCreateView(generics.CreateAPIView):
     queryset = Voiture.objects.all()
     serializer_class = FullVoitureSerializer
+
+    def create(self,request,*args,**kwargs):
+        param = request.data['parametres_voiture']
+        try:
+            para_id = Parametres_voiture.objects.get(nom_modele=param).param_id
+        except Parametres_voiture.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        request.data["parametres_voiture"] = para_id
+        return super(VoitureCreateView,self).create(request,*args,**kwargs)
 
 class UtilisateurCreateView(generics.CreateAPIView):
     queryset = Utilisateur.objects.all()
@@ -57,7 +66,7 @@ class OTPVerifyView(generics.CreateAPIView):
         return Response(reponse, status=status.HTTP_200_OK,headers=headers)
 
 """
-GET Handling Views
+    Get Handling Views
 """
 
 class FullVoitureRetrieveView(generics.RetrieveAPIView):
@@ -78,13 +87,28 @@ class UtilisateurRUDView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = FullUtilisateurSerializer
     lookup_field = 'user_id'
 
+class ParametresRetriveView(generics.RetrieveAPIView):
+    queryset = Voiture.objects.all()
+    serializer_class = ParametresVoitureSerializer
+    lookup_field = 'matricule'
+
 """
-UPDATE Handling Views
+    Update Handling Views
 """
 class FullVoitureUDView(generics.UpdateAPIView, generics.DestroyAPIView):
     queryset = Voiture.objects.all()
     serializer_class = FullVoitureSerializer
     lookup_field = 'matricule'
+
+    def update(self,request,*args,**kwargs):
+        param = request.data["parametres_voiture"]
+        try:
+            param_id = Parametres_voiture.objects.get(nom_modele=param).param_id
+        except Parametres_voiture.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        request.data["parametres_voiture"] = param_id
+        return super(FullVoitureUDView,self).update(request,*args,**kwargs)
+
 
 """
 DELETE Handling Views

@@ -10,7 +10,9 @@ from django.template.loader import render_to_string
 import pyotp
 
 class ULVSerializer(serializers.ModelSerializer):
-
+    """
+        Serializer pour le modele Utilisateur_loue_voiture
+    """
     class Meta:
         model = Utilisateur_loue_voiture
         fields = ('utilisateur','nom','voiture','consommation','date_transaction','ulv_id','titre_conso')
@@ -64,7 +66,12 @@ class ULVSerializer(serializers.ModelSerializer):
 ###########
 
 class FilteredListSerializer(serializers.ListSerializer):
-
+    """
+        Chargement de la methode to_representation de ListSerializer pour
+        customiser le comportement du serializer quand on choisit many = True
+        a savoir comment le serializer manie les relations to many
+        Objectif : aggreger les ulvs selon une somme des consos pour chaque utilisateur
+    """
     def to_representation(self, data):
         info = data.values('utilisateur','nom').annotate(Sum('consommation'))
         output = []
@@ -78,54 +85,61 @@ class FilteredListSerializer(serializers.ListSerializer):
         return output
 
 class FilteredULVSerializer(ULVSerializer):
+    """
+        Serializer dont on veut changer le comportement
+    """
     class Meta(ULVSerializer.Meta):
         list_serializer_class = FilteredListSerializer
 
 class ParametresVoitureSerializer(serializers.ModelSerializer):
+    """
+        pour get les parametres d'une voiture specifique
+    """
     class Meta:
-        model = Parametres_voiture
-        fields = ('parametre_1', 'parametre_2','date_modif')
-        read_only_fields = ('date_modif',)
+        model = Voiture
+        fields = ('parametres_voiture',)
+        read_only_fields ={'parametres_voiture',}
 
 class FullVoitureSerializer(serializers.ModelSerializer):
-    parametres_voiture = ParametresVoitureSerializer()
+    """
+        Principal serializer pour le modele voiture
+        users_set : utilisateurs inscrits à la voiture et leur conso totale
+    """
     users_set = FilteredULVSerializer(
         many=True,
         required=False,
         read_only=True
     )
+    nom_proprietaire = serializers.CharField(write_only=True)
+
     class Meta:
         model = Voiture
-        fields = ('matricule','nom_modele','proprietaire', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
+        fields = ('matricule','proprietaire','nom_proprietaire', 'parametres_voiture', 'users_set', 'date_creation', 'date_modif')
         read_only_fields = ('date_creation', 'date_modif')
         extra_kwargs = {
-            'matricule': {
-                'validators': [UniqueValidator(Voiture.objects.all()), matricule_syntax]
-            }
+            'matricule': {'validators': [UniqueValidator(Voiture.objects.all()), matricule_syntax]},
+            'parametres_voiture': {'write_only' : True,},
         }
 
 
     def create(self, validated_data):
-        parametres_data = validated_data.pop('parametres_voiture')
+        parametres = validated_data.pop('parametres_voiture')
         owner = validated_data.pop('proprietaire')
-        voiture = Voiture.objects.create(proprietaire=owner,**validated_data)
-        Parametres_voiture.objects.create(voiture=voiture,**parametres_data)
+        name = validated_data.pop('nom_proprietaire')
+        voiture = Voiture.objects.create(proprietaire=owner,parametres_voiture=parametres, **validated_data)
+        Utilisateur_loue_voiture.objects.create(voiture=voiture, utilisateur=owner, nom=name)
         return voiture
 
     def update(self, instance, validated_data):
         parametres_data = validated_data.get('parametres_voiture')
-        new_param_1 = parametres_data.get('parametre_1')
-        if new_param_1 is not None:
-            instance.parametres_voiture.parametre_1 = new_param_1
-        new_param_2 = parametres_data.get('parametre_2')
-        if new_param_2 is not None:
-            instance.parametres_voiture.parametre_2 = new_param_2
-        new_model_name = validated_data.get('nom_modele')
-        if new_model_name is not None:
-            instance.nom_modele = new_model_name
+        if parametres_data is not None:
+            instance.parametres_voiture = parametres_data
         return instance
 
 class ConsoVoitureSerializer(serializers.ModelSerializer):
+    """
+        Modele utilise pour visualiser les details de toutes les transactions
+    """
     users_set = ULVSerializer(
         many=True,
         required=False,
@@ -133,7 +147,7 @@ class ConsoVoitureSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Voiture
-        fields = ('matricule','nom_modele', 'users_set')
+        fields = ('matricule', 'users_set')
         read_only_fields = ('matricule',)
 
 ###########
@@ -141,21 +155,28 @@ class ConsoVoitureSerializer(serializers.ModelSerializer):
 ###########
 
 class BasicVoitureSerializer(serializers.ModelSerializer):
+    """
+        Serializer pour rappeler les caracterstiques principales de la voiture
+        possedee
+    """
 
-        class Meta:
-            model = Voiture
-            fields = ('matricule','nom_modele','date_creation')
-            read_only_fields = ('matricule','date_creation')
+    class Meta:
+        model = Voiture
+        fields = ('matricule', 'date_creation')
+        read_only_fields = ('matricule','date_creation')
 
 class UserListSerializer(serializers.ListSerializer):
-
+    """
+        Objectif : Aggreger les ulvs de sorte à avoir toutes les voitures
+        auxquelles un utilisateur est inscrit.
+    """
     def to_representation(self, data):
         info = data.values('utilisateur','voiture').annotate(Sum('consommation'))
         output = []
         for ulv in info:
             voit = Voiture.objects.get(car_id=ulv['voiture'])
             matri = voit.matricule
-            name = voit.nom_modele
+            name = voit.parametres_voiture.nom_modele
             dico = {
                 'matricule' : matri,
                 'nom' : name,
@@ -168,6 +189,11 @@ class UserULVSerializer(ULVSerializer):
         list_serializer_class = UserListSerializer
 
 class FullUtilisateurSerializer(serializers.ModelSerializer):
+    """
+        Principal serializer pour le modele Utilisateur
+        owned_set : voitures possedees
+        cars_set : voitures auxquelles l'utilisateur est inscrit
+    """
     owned_set = BasicVoitureSerializer(
         many=True,
         required=False,
@@ -179,7 +205,7 @@ class FullUtilisateurSerializer(serializers.ModelSerializer):
         read_only=True
     )
     class Meta:
-        #class meta lie les champs du serializer avec ceux du model
+        #class meta lie les champs du serializer avec ceux du modele
         model = Utilisateur
         fields = ('user_id', 'email', 'owned_set', 'cars_set', 'date_creation', 'date_modif')
         read_only_fields = ('user_id','date_creation', 'date_modif')
@@ -212,7 +238,6 @@ class OTPSerializer(serializers.ModelSerializer):
             val_data.update({'user' : uzr})
         except Utilisateur.DoesNotExist:
             raise serializers.ValidationError('no user registered with such email address')
-        print
         return val_data
 
 class CreationOTPSerializer(OTPSerializer):
@@ -227,8 +252,8 @@ class CreationOTPSerializer(OTPSerializer):
 
     def save(self):
         """
-            creation des topt (time based otp) necessite:
-                un intervalle de validite : les standards de l'algo recommandent 30s si les clocks sont synchro on prend 2x plus pour la marge
+            creation des topt (time based otp) necessite un intervalle de validite.
+            Les standards de l'algo recommandent 30s si les clocks sont synchro on prend 2x plus pour la marge
 
         """
         #generation de l'otp
@@ -256,6 +281,7 @@ class CreationOTPSerializer(OTPSerializer):
 
         #synthese de la reponse
         reponse = {
+            #'otp' : dico['code'],
             'message':'retrieval password successfully sent',
             }
 

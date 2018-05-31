@@ -18,23 +18,22 @@ class Voiture(models.Model):
     car_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     proprietaire = models.ForeignKey('Utilisateur',related_name='owned_set', on_delete=models.CASCADE)
     matricule = models.CharField(max_length=9, null=True)
-    nom_modele = models.CharField(max_length=45, blank=True, null=True)
+    parametres_voiture = models.ForeignKey('Parametres_voiture',related_name='related_cars', on_delete=models.CASCADE)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modif = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{{\n \t car_id : {},\n \t nom_modele : {},\n \t date_creation : {},\n \t date_modif : {} \n}}".format(self.car_id, self.nom_modele, self.date_creation, self.date_modif)
+        return "{{\n \t car_id : {},\n \t matricule : {},\n \t date_creation : {},\n \t date_modif : {} \n}}".format(self.car_id, self.matricule, self.date_creation, self.date_modif)
 
 class Parametres_voiture(models.Model):
     #Table qui étend la table voiture
     #parametres en flottant car on en aura besoin pour les methodes
     #numeriques qu'on va utiliser pour le calcul de la conso
+    param_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nom_modele = models.CharField(max_length=45, null=True)
     parametre_1 = models.FloatField(default=0)
     parametre_2 = models.FloatField(default=0)
-    date_modif = models.DateTimeField(auto_now=True)
-    voiture = models.OneToOneField('Voiture', models.CASCADE, null=True)
-    def __str__(self):
-        return " {!s:>},{{\n \t parametre_1 : {},\n \t parametre_2 : {},\n \t date_modif : {} \n}}".format(self.voiture, self.parametre_1,self.parametre_2, self.date_modif)
+
 
 class Utilisateur_loue_voiture(models.Model):
     ulv_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
