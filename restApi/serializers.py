@@ -225,7 +225,7 @@ class OTPSerializer(serializers.ModelSerializer):
         pour factorisation de code
 
     """
-    interval = 60
+    interval = 90
 
     class Meta:
         model = Utilisateur
