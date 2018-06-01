@@ -8,7 +8,7 @@ from .validators import matricule_syntax, ConsoFloatValidator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 import pyotp
-import datetime import datetime
+from datetime import datetime
 
 class ULVSerializer(serializers.ModelSerializer):
     """
@@ -262,7 +262,7 @@ class CreationOTPSerializer(OTPSerializer):
         base32str = user.secret
         totp = pyotp.TOTP(base32str, interval=self.interval)
         otp = totp.now()
-        time = str(datetime.time())
+        time = str(datetime.now().time())
 
         #envoi de l'email
         subject = 'Account retrieval'
@@ -305,7 +305,7 @@ class VerifyOTPSerializer(OTPSerializer):
         otp = self.validated_data['otp']
         user_secret = self.validated_data['user'].secret
         totp = pyotp.TOTP(user_secret, interval=self.interval)
-        time = str(datetime.time())
+        time = str(datetime.now().time())
         if totp.verify(otp):
             reponse = {
                 'user_id' : self.validated_data['user'].user_id,
