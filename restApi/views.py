@@ -87,10 +87,9 @@ class UtilisateurRUDView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = FullUtilisateurSerializer
     lookup_field = 'user_id'
 
-class ParametresRetriveView(generics.RetrieveAPIView):
-    queryset = Voiture.objects.all()
+class ParametresListView(generics.ListAPIView):
+    queryset = Parametres_voiture.objects.all()
     serializer_class = ParametresVoitureSerializer
-    lookup_field = 'matricule'
 
 """
     Update Handling Views

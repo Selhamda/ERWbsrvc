@@ -94,12 +94,12 @@ class FilteredULVSerializer(ULVSerializer):
 
 class ParametresVoitureSerializer(serializers.ModelSerializer):
     """
-        pour get les parametres d'une voiture specifique
+        pour get tous les noms des modeles qui ont
+        es parametres sur la bdd
     """
     class Meta:
-        model = Voiture
-        fields = ('parametres_voiture',)
-        read_only_fields ={'parametres_voiture',}
+        model = Parametres_voiture
+        fields = ('nom_modele',)
 
 class FullVoitureSerializer(serializers.ModelSerializer):
     """

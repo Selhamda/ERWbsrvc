@@ -208,6 +208,12 @@ class VoitureSerializerTestCase(TestCase):
             format = "json"
         ))
 
+        #setup for list test
+        self.reponses.append(self.client.get(
+            reverse('param_voiture'),
+            format='json'
+        ))
+
     def test_serializer_can_create(self):
         #test si on peut creer une instance du modele
 
@@ -239,6 +245,9 @@ class VoitureSerializerTestCase(TestCase):
         #test si une voiture a bien ete surpprimee
         self.assertTrue(new_nb<self.nb)
 
+    def test_parametres_can_list(self):
+        print(self.reponses[self.nb_cars+2].content)
+        self.assertEqual(self.reponses[self.nb_cars+2].status_code, status.HTTP_200_OK)
 
 class UtilisateurSerializerTestCase(TestCase):
 
