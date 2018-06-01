@@ -269,7 +269,6 @@ class CreationOTPSerializer(OTPSerializer):
         dico = {
             'app_name' : 'EasyRide',
             'code' : otp,
-            'time' : time,
         }
         message = render_to_string('reset_email.html',dico)
         recipient = self.validated_data['email']
@@ -286,6 +285,7 @@ class CreationOTPSerializer(OTPSerializer):
         reponse = {
             #'otp' : dico['code'],
             'message':'retrieval password successfully sent',
+            'time' : time,
             }
 
         return reponse
