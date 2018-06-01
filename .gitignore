@@ -2,7 +2,7 @@
 # Project files and directories
 /ERWebservice/local_settings.py
 /ERWebservice/static/
-/ERWebservice/tmp/
+/tmp/
 /ERWebservice/media/
 /projet/
 api_key_code.txt

@@ -8,6 +8,7 @@ from .validators import matricule_syntax, ConsoFloatValidator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 import pyotp
+import datetime import datetime
 
 class ULVSerializer(serializers.ModelSerializer):
     """
@@ -261,12 +262,14 @@ class CreationOTPSerializer(OTPSerializer):
         base32str = user.secret
         totp = pyotp.TOTP(base32str, interval=self.interval)
         otp = totp.now()
+        time = str(datetime.time())
 
         #envoi de l'email
         subject = 'Account retrieval'
         dico = {
             'app_name' : 'EasyRide',
             'code' : otp,
+            'time' : time,
         }
         message = render_to_string('reset_email.html',dico)
         recipient = self.validated_data['email']
@@ -302,13 +305,16 @@ class VerifyOTPSerializer(OTPSerializer):
         otp = self.validated_data['otp']
         user_secret = self.validated_data['user'].secret
         totp = pyotp.TOTP(user_secret, interval=self.interval)
+        time = str(datetime.time())
         if totp.verify(otp):
             reponse = {
                 'user_id' : self.validated_data['user'].user_id,
+                'time':time,
             }
             return reponse
         else:
             reponse = {
-                'message' : 'One time password does not match'
+                'message' : 'One time password does not match',
+                'time':time,
             }
             return reponse
